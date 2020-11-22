@@ -1,0 +1,132 @@
+{% extends 'common/manager.html' %}
+{% block title %}教师信息修改{% endblock %}
+{% block header %}
+<link rel='stylesheet' href={{ url_for('static', filename='css/analyze.css') }}>
+<script>
+    function getQueryStringValue(key) {
+        return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
+    }
+    layui.use(['layer', 'form'], function () {
+        let layer = layui.layer;
+        let form = layui.form;
+
+        form.on('submit(teacherModifySubmit)', function (data) {
+            form_data = data.field;
+            form_data["tuid"] = atob(getQueryStringValue("md"));
+            form_data["tun"] = "random";
+            $.ajax({
+                url: '/api/v1/teacher',
+                type: 'PUT',
+                dataType: 'json',
+                contentType: "application/json",
+                data: JSON.stringify(form_data),
+                success: function (res) {
+                    layer.msg("修改教师信息成功!");
+                    window.location.href = '/admin/teacher';
+                },
+                error: function (xhr, ts) {
+                    layer.open({
+                        title: '错误'
+                        , content: xhr.responseText.substring(1, xhr.responseText.length - 2)
+                    });
+                }
+            });
+            return false;
+        });
+    });
+</script>
+{% endblock %}
+{% block content %}
+<div class="custom-breadcrumb">
+    <span class="layui-breadcrumb">
+        <a href="/">首页</a>
+        <a href="/admin">管理员功能</a>
+        <a href="/admin/teacher">教师管理</a>
+        <a><cite>修改信息</cite></a>
+    </span>
+</div>
+<div class="layui-fluid">
+    <div class="layui-card"></div>
+    <div class="layui-card-body" style="padding: 15px;">
+        <form class="layui-form" action="">
+            <div class="layui-form-item">
+                <label class="layui-form-label">姓名</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="tn" required lay-verify="required" placeholder="请输入姓名" autocomplete="off"
+                        class="layui-input" value="{{ info['name'] }}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">性别</label>
+                <div class="layui-input-inline">
+                    <select name="ts">
+                        <option value="0">男</option>
+                        {% if info['sex'] == '女' %}
+                        <option value="1" selected>女</option>
+                        {% else %}
+                        <option value="1">女</option>
+                        {% endif %}
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">身份证号</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="tid" required lay-verify="required|identity" placeholder="请输入身份证号"
+                        autocomplete="off" class="layui-input" value="{{ info['id_card_no'] }}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">手机号</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="tno" required lay-verify="required|phone" placeholder="请输入手机号"
+                        autocomplete="off" class="layui-input" value="{{ info['phone'] }}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">邮箱</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="tmail" required lay-verify="required|email" placeholder="请输入邮箱"
+                        autocomplete="off" class="layui-input" value="{{ info['mail'] }}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">任教科目</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="tsu" required lay-verify="required" placeholder="请输入任教科目"
+                        autocomplete="off" class="layui-input" value="{{ info['subject'] }}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">年级</label>
+                <div class="layui-input-inline">
+                    <select name="tap">
+                        <option value="0"{{ ' selected' if info['tap'] == '0' else '' }}>一年级</option>
+                        <option value="1"{{ ' selected' if info['tap'] == '1' else '' }}>二年级</option>
+                        <option value="2"{{ ' selected' if info['tap'] == '2' else '' }}>三年级</option>
+                        <option value="3"{{ ' selected' if info['tap'] == '3' else '' }}>四年级</option>
+                        <option value="4"{{ ' selected' if info['tap'] == '4' else '' }}>五年级</option>
+                        <option value="5"{{ ' selected' if info['tap'] == '5' else '' }}>六年级</option>
+                        <option value="6"{{ ' selected' if info['tap'] == '6' else '' }}>七年级</option>
+                        <option value="7"{{ ' selected' if info['tap'] == '7' else '' }}>八年级</option>
+                        <option value="8"{{ ' selected' if info['tap'] == '8' else '' }}>九年级</option>
+                        <option value="9"{{ ' selected' if info['tap'] == '9' else '' }}>十年级</option>
+                        <option value="10"{{ ' selected' if info['tap'] == '10' else '' }}>十一年级</option>
+                        <option value="11"{{ ' selected' if info['tap'] == '11' else '' }}>十二年级</option>
+                        <option value="12"{{ ' selected' if info['tap'] == '12' else '' }}>伙房</option>
+                        <option value="13"{{ ' selected' if info['tap'] == '13' else '' }}>学生处</option>
+                        <option value="14"{{ ' selected' if info['tap'] == '14' else '' }}>办公室</option>
+                        <option value="15"{{ ' selected' if info['tap'] == '15' else '' }}>幼儿园</option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-inline">
+                    <button class="layui-btn" lay-submit lay-filter="teacherModifySubmit">立即提交</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

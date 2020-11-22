@@ -1,0 +1,36 @@
+{% extends 'common/manager.html' %}
+{% block title %}考试报名{% endblock %}
+{% block header %}
+    <link rel='stylesheet' href={{ url_for('static', filename='css/analyze.css') }}>
+    <script type="text/html" id="as-parents-table-toolbar">
+        <button type="button" class="layui-btn" lay-event="add">添加学生</button>
+        <button type="button" class="layui-btn" lay-event="delete">删除学生</button>
+    </script>
+    <script>
+        layui.use('form', function () {
+        });
+        layui.use('table', function () {
+            let table = layui.table;
+            table.render({
+                elem: '#demo'
+                , url: 'https://www.layui.com/demo/table/user/' //数据接口
+                , title: '学生报考考试表'
+                , toolbar: '#as-parents-table-toolbar'
+                , totalRow: true
+                , cols: [[
+                    {type: 'checkbox', fixed: 'left'}
+                    , {field: 'id', title: '编号', width: 80, sort: true, fixed: 'left', totalRowText: '合计：'}
+                    , {field: 'username', title: '姓名', width: 80}
+                    , {field: 'experience', title: '年级', width: 90, sort: true, totalRow: true}
+                    , {field: 'sex', title: '性别', width: 80, sort: true}
+                    , {field: 'score', title: '身份证号', width: 180, sort: true, totalRow: true}
+                    , {field: 'score', title: '准考证号', width: 180, sort: true, totalRow: true}
+                    , {fixed: 'right', width: 165, align: 'center', toolbar: '#barDemo'}
+                ]]
+            });
+        });
+    </script>
+{% endblock %}
+{% block content %}
+    <table class="layui-hide" id="demo" lay-filter="test"></table>
+{% endblock %}

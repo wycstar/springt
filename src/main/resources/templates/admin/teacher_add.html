@@ -1,0 +1,137 @@
+{% extends 'common/manager.html' %}
+{% block title %}添加教师{% endblock %}
+{% block header %}
+<link rel='stylesheet' href={{ url_for('static', filename='css/analyze.css') }}>
+<style type="text/css">
+    .layui-form-item .layui-input-inline {
+        width: 400px;
+    }
+</style>
+<script>
+    layui.use(['layer', 'form', 'upload'], function () {
+        let layer = layui.layer;
+        let form = layui.form;
+        let upload = layui.upload;
+
+        form.on('submit(teacherAddSubmit)', function (data) {
+            $.post({
+                url: "/api/v1/teacher",
+                dataType: 'json',
+                data: data.field,
+                success: function (result) {
+                    layer.msg("添加教师成功!");
+                    window.location.href = '/admin/teacher';
+                },
+                error: function (xhr, textStatus, errorThrown) {
+                    layer.msg(xhr.responseText.substring(1, xhr.responseText.length - 2));
+                }
+            })
+            return false;
+        });
+    });
+</script>
+{% endblock %}
+{% block content %}
+<div class="custom-breadcrumb">
+    <span class="layui-breadcrumb">
+        <a href="/">首页</a>
+        <a href="/admin">管理员功能</a>
+        <a href="/admin/teacher">教师管理</a>
+        <a><cite>添加教师</cite></a>
+    </span>
+</div>
+<div class="layui-fluid">
+    <div class="layui-card"></div>
+    <div class="layui-card-body" style="padding: 15px;">
+        <form class="layui-form" action="">
+            <div class="layui-form-item">
+                <label class="layui-form-label">登录用户名</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="tun" required lay-verify="required" placeholder="请输入登录用户名" autocomplete="off"
+                        class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">登录密码</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="tpass" lay-verify="" placeholder="无需输入, 默认为身份证号后6位, 首次登录后修改"
+                        autocomplete="off" class="layui-input" disabled>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">姓名</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="tn" required lay-verify="required" placeholder="请输入姓名" autocomplete="off"
+                        class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">性别</label>
+                <div class="layui-input-inline">
+                    <select name="ts">
+                        <option value="0">男</option>
+                        <option value="1">女</option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">身份证号</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="tid" required lay-verify="required|identity" placeholder="请输入身份证号"
+                        autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">手机号</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="tno" required lay-verify="required|phone" placeholder="请输入手机号" autocomplete="off"
+                        class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">邮箱</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="tmail" required lay-verify="required|email" placeholder="请输入邮箱" autocomplete="off"
+                        class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">任教科目</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="tsu" required lay-verify="required" placeholder="请输入任教科目"
+                        autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">年级</label>
+                <div class="layui-input-inline">
+                    <select name="tap">
+                        <option value="0">一年级</option>
+                        <option value="1">二年级</option>
+                        <option value="2">三年级</option>
+                        <option value="3">四年级</option>
+                        <option value="4">五年级</option>
+                        <option value="5">六年级</option>
+                        <option value="6">七年级</option>
+                        <option value="7">八年级</option>
+                        <option value="8">九年级</option>
+                        <option value="9">十年级</option>
+                        <option value="10">十一年级</option>
+                        <option value="11">十二年级</option>
+                        <option value="12">伙房</option>
+                        <option value="13">学生处</option>
+                        <option value="14">办公室</option>
+                        <option value="15">幼儿园</option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-inline">
+                    <button class="layui-btn" lay-submit lay-filter="teacherAddSubmit">立即提交</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,140 @@
+{% extends 'common/manager.html' %}
+{% block title %}考试报名{% endblock %}
+{% block header %}
+<link rel='stylesheet' href={{ url_for('static', filename='css/analyze.css') }}>
+<script>
+    $.ajax({
+        type: "GET",
+        url: "/api/v1/teacher",
+        dataType: 'json',
+        success: function (result) {
+            $("#teacherNameSelect").empty();
+            var htm = '<option value="">直接选择或搜索选择</option>';
+
+            for (var i = 0; i < result.length; i++) {
+                htm += '"<option value="' + result[i].id + '">' + "#" + result[i].id + " " + result[i].department +
+                    "-" + result[i].subject + "-" + result[i].name + "-" + result[i].phone + "</option> ";
+            };
+            $("#teacherNameSelect").append(htm);
+            layui.use('form', function () {
+                var form = layui.form;
+                form.render();
+            });
+        }
+    });
+    $.ajax({
+        type: "GET",
+        url: "/api/v1/student",
+        dataType: 'json',
+        success: function (result) {
+            $("#studentNameSelect").empty();
+            var htm = '<option value="">直接选择或搜索选择</option>';
+
+            for (var i = 0; i < result.length; i++) {
+                htm += '"<option value="' + result[i].id + '">' + result[i].name + " #" + result[i].id + "</option> ";
+            };
+            $("#studentNameSelect").append(htm);
+            layui.use('form', function () {
+                var form = layui.form;
+                form.render();
+            });
+        }
+    });
+    layui.use('form', function () {
+        var form = layui.form;
+
+        form.on('submit(examAddSubmit)', function (data) {
+            $.post({
+                url: "/api/v1/exam",
+                dataType: 'json',
+                data: data.field,
+                success: function (result) {
+                    layer.msg("提交成功!");
+                    window.location.href = '/manage/exam';
+                },
+                error: function (xhr, textStatus, errorThrown) {
+                    layer.msg(xhr.responseText.substring(1, xhr.responseText.length - 2));
+                }
+            })
+            return false;
+        });
+    });
+</script>
+{% endblock %}
+{% block content %}
+<div class="custom-breadcrumb">
+    <span class="layui-breadcrumb">
+        <a href="/">首页</a>
+        <a href="/admin">教学</a>
+        <a href="/admin/exam">考试管理</a>
+        <a><cite>考试报名</cite></a>
+    </span>
+</div>
+<div class="layui-fluid">
+    <div class="layui-card"></div>
+    <div class="layui-card-body" style="padding: 15px;">
+        <form class="layui-form" action="https://www.layui.com/admin/pro/" lay-filter="component-form-group">
+            <div class="layui-form-item">
+                <label class="layui-form-label">选择考生</label>
+                <div class="layui-input-inline">
+                    <select id="studentNameSelect" name="studentName" lay-filter="studentName" lay-search>
+                    </select>
+                </div>
+                <span class="layui-badge layui-bg-blue">可模糊搜索,为了防止重名,显示的考生姓名为两部分,姓名和编号</span>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">选择教师</label>
+                <div class="layui-input-inline">
+                    <select id="teacherNameSelect" name="tid" lay-verify="required" lay-filter="teacherName" lay-search>
+                    </select>
+                </div>
+                <span class="layui-badge layui-bg-blue">可模糊搜索,为了防止重名,显示的教师姓名为四部分,部门,姓名,手机号和编号</span>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">选择入学年级</label>
+                <div class="layui-input-block">
+                    <div class="layui-inline">
+                        <select id="gradeSelectYear" name="gradeYear" lay-filter="gradeYear">
+                            <option value="2020">2020</option>
+                            <option value="2018">2018</option>
+                            <option value="2019">2019</option>
+                            <option value="2020">2020</option>
+                            <option value="2021">2021</option>
+                            <option value="2022">2022</option>
+                        </select>
+                    </div>
+                    <div class="layui-inline">
+                        <select id="gradeSelectSeason" name="gradeSeason" lay-filter="gradeSeason">
+                            <option value="1">秋季</option>
+                            <option value="0">春季</option>
+                            <option value="1">秋季</option>
+                        </select>
+                    </div>
+                    <div class="layui-inline">
+                        <select id="gradeSelectClass" name="gradeClass" lay-filter="gradeClass">
+                            <option value="11">初中一年级</option>
+                            <optgroup label="初中">
+                                <option value="11">一年级</option>
+                                <option value="12">二年级</option>
+                                <option value="13">三年级</option>
+                            </optgroup>
+                            <optgroup label="高中">
+                                <option value="21">一年级</option>
+                                <option value="22">二年级</option>
+                                <option value="23">三年级</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit="" lay-filter="examAddSubmit">立即提交</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

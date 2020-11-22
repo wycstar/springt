@@ -1,0 +1,132 @@
+{% extends 'common/manager.html' %}
+{% block title %}教师管理{% endblock %}
+{% block header %}
+<link rel='stylesheet' href={{ url_for('static', filename='css/analyze.css') }}>
+<link rel='stylesheet' href={{ url_for('static', filename='css/vendor/soulTable.css') }}>
+<script type="text/html" id="as-teacher-table-toolbar">
+    <a type="button" class="layui-btn" lay-event="add" href="/admin/teacher/add">添加教师</a>
+    <a type="button" class="layui-btn" lay-event="modify">修改信息</a>
+    <a type="button" class="layui-btn" lay-event="delete">删除教师</a>
+    <span class="layui-badge layui-bg-blue">可模糊搜索,为了防止重名,显示的教师姓名为四部分,部门,姓名,手机号和编号</span>
+</script>
+<script>
+    layui.config({
+        base: '/static/extends/layui/soul/',
+        version: 'v1.5.17'
+    }).extend({
+        soulTable: 'soulTable',
+        tableChild: 'tableChild',
+        tableMerge: 'tableMerge',
+        tableFilter: 'tableFilter',
+        excel: 'excel'
+    });
+    layui.use(['table', 'form', 'layer', 'jquery', 'soulTable'], function () {
+        let layer = layui.layer;
+        let form = layui.form;
+        let table = layui.table;
+        let soulTable = layui.soulTable;
+        let tableWidth = $("#tableContainer").width();
+        let variableContentWidth = 900;
+        tableWidth = tableWidth <= variableContentWidth ? variableContentWidth : tableWidth;
+        table.render({
+            elem: '#teacherTable'
+            , url: '/api/v1/teacher' //数据接口
+            , parseData: function (res) {
+                return {
+                    code: 0,
+                    msg: "",
+                    count: res.length,
+                    data: res
+                }
+            }
+            , title: '教师列表'
+            , toolbar: '#as-teacher-table-toolbar'
+            , defaultToolbar: []
+            , totalRow: false
+            , drag: false
+            , cols: [[
+                { type: 'checkbox' }
+                , { field: 'id', title: '编号', width: 100, sort: true, filter: true }
+                , { field: 'name', title: '姓名', width: 180, sort: true, filter: true }
+                , { field: 'sex', title: '性别', width: 100, sort: true, filter: true }
+                , { field: 'id_card_no', title: '身份证号', width: tableWidth - variableContentWidth, sort: true, filter: true }
+                , { field: 'phone', title: '手机号', width: 200, sort: true, filter: true }
+                , { field: 'mail', title: '邮箱', width: 200, sort: true, filter: true }
+                , { field: 'subject', title: '任教科目', width: 120, sort: true, filter: true }
+            ]]
+            , filter: {
+                bottom: false,
+                items: ['data', 'condition']
+            }
+            , done: function (res, curr, count) {
+                soulTable.render(this);
+            }
+        });
+        table.on("toolbar(teacherTable)", function (data) {
+            switch (data.event) {
+                case 'add':
+                    window.location.href = '/admin/teacher/add';
+                    break;
+                case "modify":
+                    let modifyCheckStatus = table.checkStatus('teacherTable');
+                    let modifyCount = modifyCheckStatus.data.length;
+                    let modifyData = modifyCheckStatus.data;
+
+                    if (modifyCount == 0) {
+                        layer.alert("请至少选择一个教师");
+                        return;
+                    }
+                    if (modifyCount > 1) {
+                        layer.alert("只能同时选择一个教师进行修改");
+                        return;
+                    }
+                    window.location.href = "/admin/teacher/modify?md=" + btoa(modifyData[0].id.toString());
+                    break;
+                case "delete":
+                    let checkStatus = table.checkStatus('teacherTable');
+                    let count = checkStatus.data.length;
+                    let data = checkStatus.data;
+                    if (count > 0) {
+                        layer.confirm('确定要删除所选教师信息', { icon: 3 }, function (index) {
+                            $.ajax({
+                                url: '/api/v1/teacher',
+                                type: 'DELETE',
+                                dataType: 'json',
+                                contentType:"application/json",
+                                data: JSON.stringify(data.map(
+                                    (value, index) => {
+                                        return value.id
+                                    }
+                                )),
+                                success: function (res) {
+                                    layer.msg("删除教师成功!")
+                                    window.location.href = '/admin/teacher';
+                                },
+                                error: function (xhr, ts) {
+                                    layer.open({
+                                        title: '错误'
+                                        , content: xhr.responseText.substring(1, xhr.responseText.length - 2)
+                                    });
+                                }
+                            });
+                            layer.close(index);
+                        });
+                    }
+                    break;
+                default:
+                    break;
+            }
+        })
+    });
+</script>
+{% endblock %}
+{% block content %}
+<div class="custom-breadcrumb">
+    <span class="layui-breadcrumb">
+        <a href="/">首页</a>
+        <a href="/admin">管理员功能</a>
+        <a><cite>教师管理</cite></a>
+    </span>
+</div>
+<table class="layui-hide" id="teacherTable" lay-filter="teacherTable"></table>
+{% endblock %}

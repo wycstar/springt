@@ -1,0 +1,60 @@
+.root {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+.container {
+    height: 100vh;
+    display: flex;
+    background-color: #2F4056;
+}
+.left-panel {
+    width: 25rem;
+    color: #FFF;
+    display: flex;
+    padding: 2rem;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.right-panel {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+.login-wrapper {
+    color: #1b1e21;
+}
+.login-inner {
+    padding: 20px 20px;
+}
+.login-inner * {
+    margin: 10px 0;
+}
+.login-tips {
+    color: #FF5722;
+}
+.header-tips {
+    margin-top: 3rem;
+    font-size: 2rem;
+    text-align: center;
+}
+.footer-wrapper {
+    text-align: center;
+    font-size: 1rem;
+}
+.slide-tips {
+    position: absolute;
+    top: 70%;
+    left: 50%;
+    width: 50%;
+    color: white;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    height: 5rem;
+    z-index: 10;
+}
+.layui-carousel img {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+}

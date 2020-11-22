@@ -1,0 +1,161 @@
+{% extends 'common/manager.html' %}
+{% block title %}学生管理{% endblock %}
+{% block header %}
+<link rel='stylesheet' href={{ url_for('static', filename='css/analyze.css') }}>
+<link rel='stylesheet' href={{ url_for('static', filename='css/vendor/soulTable.css') }}>
+<script type="text/html" id="as-teacher-table-toolbar">
+    <a type="button" class="layui-btn" lay-event="add" href="/admin/student/add">添加学生</a>
+    <a type="button" class="layui-btn" lay-event="modify">修改信息</a>
+    <a type="button" class="layui-btn" lay-event="delete">删除学生</a>
+    <a type="button" class="layui-btn" lay-event="export">导出为表格</a>
+    <span class="layui-badge layui-bg-blue" style="margin-left: 5px">点击表头列的漏斗图标可以对每列数据进行筛选排序</span>
+</script>
+<script>
+    Date.prototype.toHumanReadable = function () {
+        var mm = this.getMonth() + 1;
+        var dd = this.getDate();
+
+        return [this.getFullYear(),
+        (mm > 9 ? '' : '0') + mm,
+        (dd > 9 ? '' : '0') + dd
+        ].join('-');
+    };
+
+    layui.config({
+        base: '/static/extends/layui/soul/',   // 模块目录
+        version: 'v1.5.17'
+    }).extend({                         // 模块别名
+        soulTable: 'soulTable',
+        tableChild: 'tableChild',
+        tableMerge: 'tableMerge',
+        tableFilter: 'tableFilter',
+        excel: 'excel'
+    });
+    layui.use(['table', 'form', 'layer', 'jquery', 'soulTable'], function () {
+        let layer = layui.layer;
+        let form = layui.form;
+        let table = layui.table;
+        let soulTable = layui.soulTable;
+        let tableWidth = $("#tableContainer").width();
+        let variableContentWidth = 850;
+        tableWidth = tableWidth <= variableContentWidth ? variableContentWidth : tableWidth;
+        let tableInstance = table.render({
+            elem: '#studentTable'
+            , url: '/api/v1/student' //数据接口
+            , parseData: function (res) {
+                return {
+                    code: 0,
+                    msg: "",
+                    count: res.length,
+                    data: res
+                }
+            }
+            , title: '学生报考考试表'
+            , toolbar: '#as-teacher-table-toolbar'
+            , defaultToolbar: []
+            , totalRow: false
+            , drag: false
+            , cols: [[
+                { type: 'checkbox' }
+                , { field: 'id', title: '编号', width: 80, sort: true, filter: true }
+                , { field: 'name', title: '姓名', width: 100, filter: true }
+                , { field: 'sex', title: '性别', width: 100, sort: true, filter: true }
+                , { field: 'id_card_no', title: '身份证号', width: tableWidth - variableContentWidth, sort: true, filter: true }
+                , { field: 'teacher', title: '所属教师', width: 150, sort: true, filter: true }
+                , { field: 'teacher_phone', title: '教师手机号', width: 150, sort: true, filter: true }
+                , { field: 'score', title: '成绩', width: 120, sort: true, filter: true }
+                , { field: 'admission', title: '是否录取', width: 150, sort: true, filter: true }
+            ]]
+            , filter: {
+                bottom: false,
+                items: ['data', 'condition']
+            }
+            , done: function (res, curr, count) {
+                soulTable.render(this);
+            }
+        });
+        table.on("toolbar(studentTable)", function (data) {
+            switch (data.event) {
+                case 'add':
+                    break;
+                case "modify":
+                    let modifyCheckStatus = table.checkStatus('studentTable');
+                    let modifyCount = modifyCheckStatus.data.length;
+                    let modifyData = modifyCheckStatus.data;
+
+                    if (modifyCount == 0) {
+                        layer.alert("请至少选择一个学生");
+                        return;
+                    }
+                    if (modifyCount > 1) {
+                        layer.alert("只能选择一个学生进行修改");
+                        return;
+                    }
+                    window.location.href = "/manage/student/modify?md=" + btoa(modifyData[0].id.toString());
+                    break;
+                case "delete":
+                    let checkStatus = table.checkStatus('studentTable');
+                    let count = checkStatus.data.length;
+                    let data = checkStatus.data;
+                    if (count > 0) {
+                        layer.confirm('确定要删除所选学生信息', { icon: 3 }, function (index) {
+                            $.ajax({
+                                url: '/api/v1/student',
+                                type: 'DELETE',
+                                dataType: 'json',
+                                contentType: "application/json",
+                                data: JSON.stringify(data.map(
+                                    (value, index) => {
+                                        return value.id
+                                    }
+                                )),
+                                success: function (res) {
+                                    layer.msg(res)
+                                    window.location.href = '/manage/student';
+                                },
+                                error: function (xhr, ts) {
+                                    layer.open({
+                                        title: '错误'
+                                        , content: xhr.responseText.substring(1, xhr.responseText.length - 2)
+                                    });
+                                }
+                            });
+                            layer.close(index);
+                        });
+                    }
+                    break;
+                case "export":
+                    let exportCheckStatus = table.checkStatus('studentTable');
+                    if (exportCheckStatus.data.length == 0) {
+                        layer.alert(
+                            "请至少选中一个学生导出!", {
+                            title: "错误"
+                        });
+                        return;
+                    }
+                    layer.msg("稍等片刻,表格即将呈现...");
+                    let d = new Date();
+                    soulTable.export(
+                        tableInstance, {
+                        checked: true,
+                        filename: '学生表_' + d.toHumanReadable() + '.xlsx'
+                    }
+                    );
+                    break;
+                default:
+                    break;
+            }
+        })
+    });
+</script>
+{% endblock %}
+{% block content %}
+<div class="custom-breadcrumb">
+    <span class="layui-breadcrumb">
+        <a href="/">首页</a>
+        <a href="/admin">管理员功能</a>
+        <a><cite>学生管理</cite></a>
+    </span>
+</div>
+<table class="layui-hide" id="studentTable" lay-filter="studentTable"></table>
+{% endblock %}

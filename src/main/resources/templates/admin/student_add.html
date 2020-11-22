@@ -1,0 +1,315 @@
+{% extends 'common/manager.html' %}
+{% block title %}添加学生{% endblock %}
+{% block header %}
+<link rel='stylesheet' href={{ url_for('static', filename='css/analyze.css') }}>
+<script>
+    $.ajax({
+        type: "GET",
+        url: "/api/v1/teacher",
+        dataType: 'json',
+        success: function (result) {
+            $("#teacherNameSelect").empty();
+            var htm = '<option value="">直接选择或搜索选择</option>';
+
+            for (var i = 0; i < result.length; i++) {
+                htm += '"<option value="' + result[i].id + '">' + "#" + result[i].id + " " + result[i].department +
+                    "-" + result[i].subject + "-" + result[i].name + "-" + result[i].phone + "</option> ";
+            };
+            $("#teacherNameSelect").append(htm);
+            layui.use('form', function () {
+                var form = layui.form;
+                form.render();
+            });
+        }
+    });
+    let img_key = "";
+    layui.config({
+        base: '/static/extends/layui/layarea/',
+        version: '1.0'
+    });
+    layui.use(['layer', 'form', 'layarea', 'upload'], function () {
+        let layer = layui.layer;
+        let form = layui.form;
+        let layarea = layui.layarea;
+        let upload = layui.upload;
+
+        layarea.render({
+            elem: '#home-area-picker',
+            change: function (res) {
+            }
+        });
+
+        layarea.render({
+            elem: '#school-area-picker',
+            change: function (res) {
+            }
+        });
+
+        var uploadInst = upload.render({
+            elem: '#studentAvatar'
+            , url: '/api/v1/student/avatar'
+            , before: function (obj) {
+                obj.preview(function (index, file, result) {
+                    $('#studentAvatarPreview').attr('src', result);
+                });
+            }
+            , done: function (res) {
+                console.log(res);
+                if (res.code == 1) {
+                    $('#studentAvatarPreviewTips').text(res.msg);
+                    $('#studentAvatarPreviewTips').css({
+                        'color': 'red'
+                    })
+                };
+                img_key = res.data.key;
+            }
+            , error: function (res) {
+                layer.msg(res.msg)
+            }
+            , accept: 'images'
+            , acceptMime: 'image/*'
+            , number: 1
+            , size: 1024
+        });
+
+        form.on('submit(studentAddSubmit)', function (data) {
+            form_data = data.field;
+            form_data["avatarKey"] = img_key;
+            console.log(form_data);
+            $.post({
+                url: "/api/v1/student",
+                dataType: 'json',
+                data: form_data,
+                success: function (result) {
+                    layer.msg("提交成功!");
+                    img_key = "";
+                    window.location.href = '/manage/student';
+                },
+                error: function (xhr, textStatus, errorThrown) {
+                    layer.msg(xhr.responseText.substring(1, xhr.responseText.length - 2));
+                }
+            })
+            return false;
+        });
+        form.verify({
+            cr: function (value, item) {
+                console.log(item);
+            }
+        })
+    });
+</script>
+{% endblock %}
+{% block content %}
+<div class="custom-breadcrumb">
+    <span class="layui-breadcrumb">
+        <a href="/">首页</a>
+        <a href="/manage">教学</a>
+        <a href="/manage/student">学生管理</a>
+        <a><cite>添加学生</cite></a>
+    </span>
+</div>
+<div class="layui-fluid">
+    <div class="layui-card"></div>
+    <div class="layui-card-body" style="padding: 15px;">
+        <form class="layui-form layui-form-pane" action="">
+            <div class="layui-form-item">
+                <label class="layui-form-label">选择教师</label>
+                <div class="layui-input-inline">
+                    <select id="teacherNameSelect" name="tid" lay-verify="required" lay-filter="teacherName" lay-search>
+                    </select>
+                </div>
+                <span class="layui-badge layui-bg-blue">可模糊搜索,为了防止重名,显示的教师姓名为四部分,部门,姓名,手机号和编号</span>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">学生姓名</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="sn" required lay-verify="required" placeholder="请输入姓名"
+                            autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">身份证号</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="sid" required lay-verify="required" placeholder="请输入身份证号"
+                            autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">学生性别</label>
+                    <div class="layui-input-inline">
+                        <select name="ss">
+                            <option value="0">男</option>
+                            <option value="1">女</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-block" style="margin-top: 5px;">
+                    <label class="layui-form-label">学生相片</label>
+                    <div class="layui-input-inline">
+                        <button type="button" class="layui-btn" id="studentAvatar">
+                            <i class="layui-icon">&#xe67c;</i>上传图片
+                        </button>
+                    </div>
+                    <div style="margin-bottom: 5px;">
+                        <img class="layui-upload-img" width="300" id="studentAvatarPreview">
+                        <p id="studentAvatarPreviewTips"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">肃宁居住证</label>
+                    <div class="layui-input-inline">
+                        <select name="crb" lay-verify="cr">
+                            <option value="0">否</option>
+                            <option value="1">是</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <!-- 联系人信息 -->
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">联系人1姓名</label>
+                    <div class="layui-input-inline">
+                        <label>
+                            <input type="text" name="cn1" required lay-verify="required" placeholder="请输入姓名"
+                                autocomplete="off" class="layui-input">
+                        </label>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">手机号</label>
+                    <div class="layui-input-inline">
+                        <label>
+                            <input type="text" name="cno1" required lay-verify="required" placeholder="请输入手机号"
+                                autocomplete="off" class="layui-input">
+                        </label>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">与学生关系</label>
+                    <div class="layui-input-inline">
+                        <select name="cr1" lay-verify="cr">
+                            <option value="0">父亲</option>
+                            <option value="1">母亲</option>
+                            <option value="2">其他</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">联系人2姓名</label>
+                    <div class="layui-input-inline">
+                        <label>
+                            <input type="text" name="cn2" required lay-verify="required" placeholder="请输入姓名"
+                                autocomplete="off" class="layui-input">
+                        </label>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">手机号</label>
+                    <div class="layui-input-inline">
+                        <label>
+                            <input type="text" name="cno2" required lay-verify="required" placeholder="请输入手机号"
+                                autocomplete="off" class="layui-input">
+                        </label>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">与学生关系</label>
+                    <div class="layui-input-inline">
+                        <select name="cr2" lay-verify="cr">
+                            <option value="0">父亲</option>
+                            <option value="1">母亲</option>
+                            <option value="2">其他</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <!-- 选择家庭地址 -->
+            <div class="layui-form-item" id="home-area-picker">
+                <div class="layui-form-label">家庭地址</div>
+                <div class="layui-input-inline" style="width: 150px;">
+                    <label>
+                        <select name="province" class="province-selector" data-value="河北省" lay-filter="province-1">
+                            <option value="">请选择省</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="layui-input-inline" style="width: 150px;">
+                    <label>
+                        <select name="city" class="city-selector" data-value="沧州市" lay-filter="city-1">
+                            <option value="">请选择市</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="layui-input-inline" style="width: 150px;">
+                    <label>
+                        <select name="county" class="county-selector" data-value="肃宁县" lay-filter="county-1">
+                            <option value="">请选择区/县</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="layui-input-inline" style="width: 450px;">
+                    <label>
+                        <input type="text" name="street" required lay-verify="required" placeholder="请输入街道"
+                            autocomplete="off" class="layui-input">
+                    </label>
+                </div>
+            </div>
+            <hr>
+            <!-- 原学校相关 -->
+            <div class="layui-form-item" id="school-area-picker">
+                <div class="layui-form-label">原学校地址</div>
+                <div class="layui-input-inline" style="width: 150px;">
+                    <label>
+                        <select name="os-province" class="province-selector" data-value="河北省" lay-filter="province-1">
+                            <option value="">请选择省</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="layui-input-inline" style="width: 150px;">
+                    <label>
+                        <select name="os-city" class="city-selector" data-value="沧州市" lay-filter="city-1">
+                            <option value="">请选择市</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="layui-input-inline" style="width: 150px;">
+                    <label>
+                        <select name="os-county" class="county-selector" data-value="肃宁县" lay-filter="county-1">
+                            <option value="">请选择区/县</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="layui-input-inline" style="width: 450px;">
+                    <label>
+                        <input type="text" name="os-name" required lay-verify="required" placeholder="请输入学校名称"
+                            autocomplete="off" class="layui-input">
+                    </label>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">原班级名次</label>
+                    <div class="layui-input-inline">
+                        <label>
+                            <input type="text" name="os-rank" required lay-verify="required|number"
+                                placeholder="请输入原学校班级名次" autocomplete="off" class="layui-input">
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <!-- 提交表单 -->
+            <div class="layui-form-item">
+                <div class="layui-input-inline">
+                    <button class="layui-btn" lay-submit lay-filter="studentAddSubmit">立即提交</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

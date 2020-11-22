@@ -1,0 +1,132 @@
+{% extends 'common/manager.html' %}
+{% block title %}考试管理{% endblock %}
+{% block header %}
+<link rel='stylesheet' href={{ url_for('static', filename='css/analyze.css') }}>
+<link rel='stylesheet' href={{ url_for('static', filename='css/vendor/soulTable.css') }}>
+<script type="text/html" id="as-teacher-table-toolbar">
+    <a type="button" class="layui-btn" lay-event="add" href="/manage/exam/add">添加考试</a>
+    <a type="button" class="layui-btn" lay-event="delete">删除考试</a>
+    <a type="button" class="layui-btn" lay-event="export">导出准考证</a>
+    <span class="layui-badge layui-bg-blue" style="margin-left: 5px">点击表头列的漏斗图标可以对每列数据进行筛选排序</span>
+</script>
+<script>
+    layui.config({
+        base: '/static/extends/layui/soul/',
+        version: 'v1.5.17'
+    }).extend({
+        soulTable: 'soulTable',
+        tableChild: 'tableChild',
+        tableMerge: 'tableMerge',
+        tableFilter: 'tableFilter',
+        excel: 'excel'
+    });
+    layui.use(['table', 'form', 'jquery', 'layer', 'soulTable'], function () {
+        let $ = layui.$;
+        let layer = layui.layer;
+        let form = layui.form;
+        let table = layui.table;
+        let soulTable = layui.soulTable;
+        let tableWidth = $("#tableContainer").width();
+        let variableContentWidth = 400;
+        tableWidth = tableWidth <= variableContentWidth ? variableContentWidth : tableWidth;
+        let tableInstance = table.render({
+            elem: '#examTable'
+            , url: '/api/v1/exam' //数据接口
+            , method: 'get'
+            , parseData: function (res) {
+                return {
+                    code: 0,
+                    msg: "",
+                    count: res.length,
+                    data: res
+                }
+            }
+            , title: '学生报考考试表'
+            , defaultToolbar: []
+            , toolbar: '#as-teacher-table-toolbar'
+            , totalRow: false
+            , drag: false
+            , cols: [[
+                { type: 'checkbox' }
+                , { field: 'id', title: '编号', width: 80, sort: true, filter: true }
+                , { field: 'name', title: '姓名', width: 160, sort: true, filter: true }
+                , { field: 'grade', title: '年级', width: variableContentWidth - 160, sort: true, filter: true }
+                , { field: 'id_card_no', title: '身份证号', width: (tableWidth - variableContentWidth) / 5, sort: true, filter: true }
+                , { field: 'at_no', title: '准考证号', width: (tableWidth - variableContentWidth) * 2 / 5, sort: true, filter: true }
+            ]]
+            , filter: {
+                bottom: false,
+                items: ['data', 'condition']
+            }
+            , done: function (res, curr, count) {
+                soulTable.render(this);
+            }
+        });
+
+        table.on("toolbar(examTable)", function (data) {
+            switch (data.event) {
+                case 'delete':
+                    let checkStatus = table.checkStatus('examTable');
+                    let count = checkStatus.data.length;
+                    let data = checkStatus.data;
+
+                    if (count > 0) {
+                        layer.confirm('确定要删除所选考试信息', { icon: 3 }, function (index) {
+                            $.ajax({
+                                url: '/api/v1/exam',
+                                type: 'DELETE',
+                                dataType: 'json',
+                                contentType: "application/json",
+                                data: JSON.stringify(data.map(
+                                    (value, index) => {
+                                        return value.id
+                                    }
+                                )),
+                                success: function (res) {
+                                    layer.msg("删除成功")
+                                    window.location.href = '/manage/exam';
+                                },
+                                error: function (xhr, ts) {
+                                    layer.open({
+                                        title: '在线调试'
+                                        , content: xhr.responseText.substring(1, xhr.responseText.length - 2)
+                                    });
+                                }
+                            });
+                            layer.close(index);
+                        });
+                    }
+                    break;
+                case 'export':
+                    let exportCheckStatus = table.checkStatus('examTable');
+                    let exportCount = exportCheckStatus.data.length;
+                    let exportData = exportCheckStatus.data;
+
+                    if (exportCount > 0) {
+                        layer.msg("稍等片刻,准考证生成中,生成后将自动开始下载");
+                        window.location.href = "/api/v1/exam/pdf?examId=" + exportData.map(
+                            (value, index) => {
+                                return value.id
+                            }
+                        ).join(",")
+                    }
+                    else {
+                        layer.alert("请至少选择一场考试!");
+                    }
+                default:
+                    break;
+            }
+        })
+    });
+</script>
+{% endblock %}
+{% block content %}
+<div class="custom-breadcrumb">
+    <span class="layui-breadcrumb">
+        <a href="/">首页</a>
+        <a href="/manage">教学</a>
+        <a><cite>报名管理</cite></a>
+    </span>
+</div>
+<table class="layui-hide" id="examTable" lay-filter="examTable"></table>
+{% endblock %}
