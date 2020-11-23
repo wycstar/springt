@@ -7,13 +7,14 @@ import java.util.stream.IntStream;
 
 public class Token {
     private static String[] alphanumericAlphabet() {
-        return IntStream.concat(
-            IntStream.rangeClosed('0', '9'),
-            IntStream.rangeClosed('A', 'Z')
-        ).mapToObj(c -> (char) c+",").collect(Collectors.joining()).split(",");
+        return IntStream
+                .concat(IntStream.rangeClosed('0', '9'),
+                        IntStream.concat(IntStream.rangeClosed('A', 'Z'), IntStream.rangeClosed('a', 'z')))
+                .mapToObj(c -> (char) c + ",").collect(Collectors.joining()).split(",");
     }
 
     private String randomString() {
-        List<Character> list3 = Arrays.asList('a','b','c','d','e');
+        String[] alphaDict = alphanumericAlphabet();
+        return IntStream.range(0, 6).map(arg0)
     }
 }
