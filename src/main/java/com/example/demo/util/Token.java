@@ -4,15 +4,13 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-import java.security.SecureRandom;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.concurrent.ThreadLocalRandom;
 
 import java.security.InvalidKeyException;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
@@ -26,53 +24,75 @@ public class Token {
                 .mapToObj(c -> String.valueOf((char) c)).collect(Collectors.joining());
     }
 
-    private String randomString() {
+    private static String randomString() {
         /*
          * 生成一个六位的随机字符串
          */
         String s = alphanumericAlphabet();
-        System.out.println(IntStream.range(0, 6)
+        return IntStream.range(0, 6)
                 .mapToObj(c -> String.valueOf(s.charAt(ThreadLocalRandom.current().nextInt(s.length()))))
-                .collect(Collectors.joining()));
+                .collect(Collectors.joining());
     }
 
-    public static String byteArrayHexDigest(byte[] input){
-        // String result="";
-        // for(byte b: input){
-        //     result+="0x"+ String.format("%02x", arr[i]).toUpperCase()+" ";
-        // }
-        // return result.substring(0,result.length()-1);
-        return IntStream.range(0, input.length).mapToObj(i -> String.format("%02x", input[i])).collect(Collectors.joining()));
+    private static String byteArrayToHexDigest(byte[] input){
+        return IntStream.range(0, input.length).mapToObj(i -> {return String.format("%02x", input[i]);}).collect(Collectors.joining());
     }
 
-    private String generateToken() {
+    private static byte[] HexDigestTobyteArray(String input){
+        
+    }
+
+    private static String generateContent(String username) {
+        Date date = new Date();
+        return String.join("|", Arrays.asList(randomString(), String.valueOf(date.getTime() / 1000), username));
+    }
+
+    public String generateToken(String username) {
         try {
-            KeyGenerator kg = KeyGenerator.getInstance("AES");
-            kg.init(128, new SecureRandom("fuck_u_nvidia".getBytes()));
-            SecretKey sk = kg.generateKey();
-            SecretKeySpec key = new SecretKeySpec(sk.getEncoded(), "AES");
+            SecretKeySpec key = new SecretKeySpec("fuck_u_nvidia123".getBytes(), "AES");
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.ENCRYPT_MODE, key);
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] rawSecret = cipher.doFinal("fuck".getBytes());
-            byte[] digest = md.digest(rawSecret);
-            System.out.println(byteArray2Str(digest));
-            return "a";
+            return byteArrayToHexDigest(cipher.doFinal(generateContent(username).getBytes()));
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
-            return "a";
+            return "";
         } catch (NoSuchPaddingException e) {
             e.printStackTrace();
-            return "a";
+            return "";
         } catch (InvalidKeyException e) {
             e.printStackTrace();
-            return "a";
+            return "";
         } catch (IllegalBlockSizeException e) {
             e.printStackTrace();
-            return "a";
+            return "";
         } catch (BadPaddingException e) {
             e.printStackTrace();
-            return "a";
+            return "";
+        }
+    }
+
+    public Boolean validateToken(String token) {
+        try {
+            SecretKeySpec key = new SecretKeySpec("fuck_u_nvidia123".getBytes(), "AES");
+            Cipher cipher = Cipher.getInstance("AES");
+            cipher.init(Cipher.DECRYPT_MODE, key);
+            cipher.doFinal(HexDigestTobyteArray(token));
+            return true;
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return false;
+        } catch (NoSuchPaddingException e) {
+            e.printStackTrace();
+            return false;
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+            return false;
+        } catch (IllegalBlockSizeException e) {
+            e.printStackTrace();
+            return false;
+        } catch (BadPaddingException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 }
