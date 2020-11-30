@@ -39,7 +39,15 @@ public class Token {
     }
 
     private static byte[] HexDigestTobyteArray(String input){
-        
+        int str_len = input.length();
+        if(str_len % 2 == 1) {
+            return new byte[0];
+        }
+        byte[] output = new byte[str_len / 2];
+        for (int i = 0; i < str_len / 2; i++) {
+            output[i / 2] = (byte)(Character.digit(input.charAt(i), 16) << 4 | Character.digit(input.charAt(i + 1), 16));
+        }
+        return output;
     }
 
     private static String generateContent(String username) {
@@ -94,5 +102,9 @@ public class Token {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public String getUsernameFromToken(String token) {
+        return "";
     }
 }
