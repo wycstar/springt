@@ -9,7 +9,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.concurrent.ThreadLocalRandom;
-
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import javax.crypto.IllegalBlockSizeException;
@@ -17,6 +17,8 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.BadPaddingException;
 
 public class Token {
+    private String secret = "fuck_u_nvidia123";
+
     private static String alphanumericAlphabet() {
         return IntStream
                 .concat(IntStream.rangeClosed('0', '9'),
@@ -57,7 +59,7 @@ public class Token {
 
     public String generateToken(String username) {
         try {
-            SecretKeySpec key = new SecretKeySpec("fuck_u_nvidia123".getBytes(), "AES");
+            SecretKeySpec key = new SecretKeySpec(this.secret.getBytes(), "AES");
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.ENCRYPT_MODE, key);
             return byteArrayToHexDigest(cipher.doFinal(generateContent(username).getBytes()));
@@ -81,7 +83,7 @@ public class Token {
 
     public Boolean validateToken(String token) {
         try {
-            SecretKeySpec key = new SecretKeySpec("fuck_u_nvidia123".getBytes(), "AES");
+            SecretKeySpec key = new SecretKeySpec(this.secret.getBytes(), "AES");
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.DECRYPT_MODE, key);
             cipher.doFinal(HexDigestTobyteArray(token));
@@ -105,6 +107,26 @@ public class Token {
     }
 
     public String getUsernameFromToken(String token) {
-        return "";
+        try {
+            SecretKeySpec key = new SecretKeySpec(this.secret.getBytes(), "AES");
+            Cipher cipher = Cipher.getInstance("AES");
+            cipher.init(Cipher.DECRYPT_MODE, key);
+            return new String(cipher.doFinal(HexDigestTobyteArray(token)), StandardCharsets.UTF_8);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return "";
+        } catch (NoSuchPaddingException e) {
+            e.printStackTrace();
+            return "";
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+            return "";
+        } catch (IllegalBlockSizeException e) {
+            e.printStackTrace();
+            return "";
+        } catch (BadPaddingException e) {
+            e.printStackTrace();
+            return "";
+        }
     }
 }
