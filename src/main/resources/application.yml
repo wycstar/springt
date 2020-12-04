@@ -20,3 +20,8 @@ spring:
     enabled: true
   resources:
     static-locations: classpath:/static/
+  session:
+    store-type: redis
+  redis:
+    host: ${REDIS_HOST}
+    port: ${REDIS_PORT}
