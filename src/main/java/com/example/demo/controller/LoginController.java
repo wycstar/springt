@@ -1,6 +1,6 @@
 package com.example.demo.controller;
 
-import com.example.demo.Bean.Login;
+import com.example.demo.bean.Login;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;

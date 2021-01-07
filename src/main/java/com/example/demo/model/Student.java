@@ -33,7 +33,7 @@ public class Student {
     private PublicEnumType.SexType sex;
 
     @Column(name = "id_card_no")
-    private String id_card_no;
+    private String idCardNo;
 
     @Column(name = "avatar")
     private String avatar;

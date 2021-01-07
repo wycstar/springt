@@ -40,13 +40,13 @@ public class Token {
         return IntStream.range(0, input.length).mapToObj(i -> {return String.format("%02x", input[i]);}).collect(Collectors.joining());
     }
 
-    private static byte[] HexDigestTobyteArray(String input){
-        int str_len = input.length();
-        if(str_len % 2 == 1) {
+    private static byte[] hexDigestTobyteArray(String input){
+        int strLen = input.length();
+        if(strLen % 2 == 1) {
             return new byte[0];
         }
-        byte[] output = new byte[str_len / 2];
-        for (int i = 0; i < str_len / 2; i++) {
+        byte[] output = new byte[strLen / 2];
+        for (int i = 0; i < strLen / 2; i++) {
             output[i / 2] = (byte)(Character.digit(input.charAt(i), 16) << 4 | Character.digit(input.charAt(i + 1), 16));
         }
         return output;
@@ -86,7 +86,7 @@ public class Token {
             SecretKeySpec key = new SecretKeySpec(this.secret.getBytes(), "AES");
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.DECRYPT_MODE, key);
-            cipher.doFinal(HexDigestTobyteArray(token));
+            cipher.doFinal(hexDigestTobyteArray(token));
             return true;
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
@@ -111,7 +111,7 @@ public class Token {
             SecretKeySpec key = new SecretKeySpec(this.secret.getBytes(), "AES");
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.DECRYPT_MODE, key);
-            return new String(cipher.doFinal(HexDigestTobyteArray(token)), StandardCharsets.UTF_8);
+            return new String(cipher.doFinal(hexDigestTobyteArray(token)), StandardCharsets.UTF_8);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
             return "";
