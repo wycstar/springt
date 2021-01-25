@@ -37,4 +37,12 @@ public class Account {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private Date updatedAt;
+
+    public Account() {
+        
+    }
+
+    public Account(PublicEnumType.PermissionType permission) {
+        this.permission = permission;
+    }
 }

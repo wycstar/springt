@@ -42,4 +42,15 @@ public class User {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private Date updatedAt;
+
+    public User() {
+        
+    }
+
+    public User(String name, String mail, String phone, Account account) {
+        this.name = name;
+        this.mail = mail;
+        this.phone = phone;
+        this.role = account;
+    }
 }

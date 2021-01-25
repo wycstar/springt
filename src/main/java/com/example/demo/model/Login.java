@@ -40,4 +40,19 @@ public class Login {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private Date updatedAt;
+
+    public Login() {
+
+    }
+
+    public Login(String username, String password, User user) {
+        this.username = username;
+        this.password = password;
+        this.user = user;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Login<username=\"%s\", password=\"%s\">", this.username, this.password);
+    }
 }
